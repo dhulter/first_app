@@ -59,4 +59,7 @@
 - Worked: Yes; the requested changes were already in place.
 - Asked: Add a startup choice between a professional look and a chaos mode with random colors and font.
 - Changed: Added a startup appearance chooser, a header control to reopen it, and documented the visit-scoped behavior in `spec.md`.
-- Worked: Pending browser checks.
+- Worked: Yes; browser checks confirmed both modes, the header chooser, clean reset to Professional, and no horizontal overflow at a 375 px viewport.
+- Asked: Set the global Git email to `dhulter3@byu.edu` and global name to `David Hulterstrom`.
+- Changed: Updated the global `user.email` and `user.name` Git settings.
+- Worked: Yes; `git config --global --get` confirmed both values.
