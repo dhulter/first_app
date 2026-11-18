@@ -1,0 +1,2463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6fb">
+  <title>Beam Designer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17243b;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --paper: #ffffff;
+      --canvas: #f3f6fb;
+      --blue: #315ee8;
+      --blue-dark: #2148c8;
+      --teal: #078b84;
+      --teal-soft: #e7f7f5;
+      --green: #157347;
+      --green-soft: #eaf7ef;
+      --amber: #996515;
+      --amber-soft: #fff7e6;
+      --shadow: 0 12px 30px rgba(20, 37, 68, 0.06);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .topbar {
+      background: #14213a;
+      color: #fff;
+    }
+
+    .topbar-inner {
+      width: min(1480px, calc(100% - 48px));
+      min-height: 68px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      font-size: 17px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: #284b9b;
+      color: #dce8ff;
+    }
+
+    .topbar-note {
+      color: #c3cee2;
+      font-size: 12px;
+    }
+
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .byu-label {
+      padding: 4px 8px;
+      border: 1px solid #53627d;
+      border-radius: 6px;
+      color: #e4ecfb;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+
+    .appearance-trigger {
+      padding: 7px 10px;
+      border: 1px solid #53627d;
+      border-radius: 8px;
+      background: transparent;
+      color: #e4ecfb;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .appearance-trigger:hover {
+      background: #243552;
+    }
+
+    #app-shell {
+      min-height: 100vh;
+      transition: filter 180ms ease;
+    }
+
+    .appearance-gate {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      overflow-y: auto;
+      background: rgba(15, 27, 48, 0.72);
+    }
+
+    .appearance-panel {
+      width: min(720px, 100%);
+      padding: 30px;
+      border: 1px solid #e3eaf3;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(8, 20, 42, 0.25);
+    }
+
+    .appearance-panel h2 {
+      margin: 0 0 7px;
+      color: #17243b;
+      font-size: clamp(24px, 4vw, 32px);
+      letter-spacing: -0.045em;
+      line-height: 1.15;
+    }
+
+    .appearance-intro {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .appearance-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 23px;
+    }
+
+    .appearance-choice {
+      padding: 12px;
+      border: 1px solid #dfe6ef;
+      border-radius: 13px;
+      background: #fff;
+      color: #17243b;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+    }
+
+    .appearance-choice:hover {
+      transform: translateY(-2px);
+      border-color: #9eb4dc;
+      box-shadow: 0 8px 20px rgba(25, 50, 90, 0.1);
+    }
+
+    .appearance-choice:focus-visible,
+    .appearance-trigger:focus-visible {
+      outline: 3px solid #80a9ff;
+      outline-offset: 3px;
+    }
+
+    .appearance-preview {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-height: 102px;
+      padding: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      border-radius: 9px;
+    }
+
+    .appearance-preview.professional {
+      background: linear-gradient(135deg, #eef4ff 0 48%, #f2f8f6 48% 100%);
+      color: #203d72;
+    }
+
+    .appearance-preview.chaos {
+      background: linear-gradient(130deg, #ff3cac 0 32%, #784ba0 32% 64%, #2b86c5 64% 100%);
+      color: #fff6a8;
+      font-family: "Comic Sans MS", cursive;
+      transform: rotate(-1deg);
+    }
+
+    .appearance-sample {
+      font-size: 31px;
+      font-weight: 850;
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+
+    .appearance-swatches {
+      display: flex;
+      gap: 5px;
+    }
+
+    .appearance-swatches span {
+      width: 14px;
+      height: 14px;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+    }
+
+    .appearance-choice-title {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .appearance-choice-description {
+      display: block;
+      min-height: 36px;
+      color: #6b788b;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .appearance-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      color: #315ee8;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .appearance-disclaimer {
+      margin: 17px 0 0;
+      color: #8792a3;
+      font-size: 10px;
+    }
+
+    body.chaos-mode #app-shell {
+      font-family: var(--chaos-font, "Comic Sans MS", cursive);
+    }
+
+    main {
+      width: min(1480px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      font-size: clamp(26px, 3vw, 34px);
+      letter-spacing: -0.045em;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preview-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #f1dfb6;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: #795512;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .preview-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d69a20;
+    }
+
+    .notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 13px 15px;
+      margin-bottom: 20px;
+      border: 1px solid #cfe0ff;
+      border-radius: 12px;
+      background: #eef4ff;
+      color: #28436f;
+      font-size: 13px;
+    }
+
+    .notice strong {
+      display: block;
+      margin-bottom: 1px;
+      color: #1c3768;
+    }
+
+    .notice-icon {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #d9e7ff;
+      color: #315ee8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(290px, 350px) minmax(0, 1fr);
+      align-items: start;
+      gap: 22px;
+    }
+
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h2,
+    .section-heading h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .step-tag {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .input-body {
+      padding: 17px 18px 19px;
+    }
+
+    .group + .group {
+      padding-top: 17px;
+      margin-top: 17px;
+      border-top: 1px solid var(--line);
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .group-number {
+      width: 21px;
+      height: 21px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 7px;
+      background: #eef2ff;
+      color: var(--blue);
+      font-size: 11px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px 10px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      color: #46556d;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .control,
+    .input-with-unit input {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid #d6deea;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .control {
+      padding: 8px 10px;
+    }
+
+    .input-with-unit {
+      position: relative;
+    }
+
+    .input-with-unit input {
+      padding: 8px 45px 8px 10px;
+    }
+
+    .unit {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      color: #78869a;
+      font-size: 11px;
+      pointer-events: none;
+    }
+
+    .field-help {
+      margin: 5px 0 0;
+      color: #7b8798;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .field.invalid .control,
+    .field.invalid input {
+      border-color: #d14343;
+      background: #fffafa;
+    }
+
+    .field-error {
+      margin: 4px 0 0;
+      color: #b42318;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .validation-summary {
+      margin: 9px 0 0;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .validation-summary.error {
+      color: #b42318;
+    }
+
+    .validation-summary.success {
+      color: #157347;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .member-meta {
+      padding: 10px 11px;
+      margin-top: 11px;
+      border: 1px solid #e1e9f4;
+      border-radius: 9px;
+      background: #f8fafd;
+    }
+
+    .meta-title {
+      margin: 0 0 7px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .property-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px 10px;
+      color: #526179;
+      font-size: 10px;
+    }
+
+    .property-grid strong {
+      color: #263650;
+      font-weight: 700;
+    }
+
+    .load-case {
+      padding: 11px;
+      border: 1px solid #e1e8f2;
+      border-radius: 10px;
+      background: #fbfcfe;
+    }
+
+    .load-case + .load-case {
+      margin-top: 9px;
+    }
+
+    .load-case-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .case-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .case-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .case-caption {
+      color: #8490a2;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .input-beam-figure {
+      padding: 8px 8px 6px;
+      margin: 0 0 10px;
+      border: 1px solid #e8edf4;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .input-beam-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .input-beam-caption {
+      margin: 2px 0 0;
+      color: #748197;
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .load-row + .load-row {
+      margin-top: 9px;
+      padding-top: 9px;
+      border-top: 1px dashed #dce4ef;
+    }
+
+    .load-row-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: #65748b;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .load-row .field-grid {
+      gap: 7px;
+    }
+
+    .load-row .field label {
+      margin-bottom: 3px;
+      font-size: 10px;
+    }
+
+    .load-row .control,
+    .load-row .input-with-unit input {
+      min-height: 34px;
+      font-size: 11px;
+    }
+
+    .load-row .input-with-unit input {
+      padding: 6px 39px 6px 8px;
+    }
+
+    .load-row .unit {
+      right: 8px;
+      font-size: 9px;
+    }
+
+    .add-button,
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .add-button {
+      min-height: 33px;
+      padding: 0 10px;
+      margin-top: 10px;
+      border: 1px dashed #b8c5d8;
+      background: #fff;
+      color: #506079;
+    }
+
+    .load-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+    }
+
+    .load-type-picker {
+      flex: 1 1 150px;
+      min-width: 0;
+    }
+
+    .load-type-picker label {
+      display: block;
+      margin-bottom: 4px;
+      color: #65748b;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .load-type-picker .control {
+      min-height: 34px;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+
+    .load-actions .add-button {
+      flex: 0 0 auto;
+      margin-top: 0;
+    }
+
+    .load-case-remove,
+    .load-remove {
+      border: 0;
+      background: transparent;
+      color: #a23a3a;
+      font-size: 10px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .load-case-remove {
+      padding: 4px 0 4px 6px;
+    }
+
+    .load-remove {
+      padding: 0;
+    }
+
+    .add-button:not(:disabled),
+    .primary-button:not(:disabled) {
+      cursor: pointer;
+    }
+
+    .add-button:not(:disabled):hover {
+      border-color: #8ea3c4;
+      background: #f7f9fc;
+    }
+
+    .primary-button:not(:disabled):hover {
+      background: var(--blue-dark);
+    }
+
+    .primary-button {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 14px;
+      background: var(--blue);
+      color: #fff;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.72;
+    }
+
+    .button-note {
+      margin: 7px 0 0;
+      color: #8792a3;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .results {
+      min-width: 0;
+    }
+
+    .results-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 20px;
+      margin-bottom: 15px;
+    }
+
+    .results-head h2 {
+      margin: 0 0 3px;
+      font-size: 16px;
+    }
+
+    .results-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .case-select {
+      min-width: 190px;
+    }
+
+    .case-select label {
+      display: block;
+      margin-bottom: 4px;
+      color: #65748b;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .case-select select {
+      width: 100%;
+      min-height: 36px;
+      padding: 6px 9px;
+      border: 1px solid #d7dfeb;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .case-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 16px;
+      margin-bottom: 13px;
+      border: 1px solid #d5e6e5;
+      border-radius: 12px;
+      background: #f3fbfa;
+    }
+
+    .case-banner h3 {
+      margin: 0 0 2px;
+      font-size: 13px;
+    }
+
+    .case-banner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .case-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border: 1px solid #c7e7d3;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 5px 15px rgba(20, 37, 68, 0.035);
+    }
+
+    .metric-label {
+      margin-bottom: 6px;
+      color: #6d7a8e;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      color: #1c2b43;
+      font-size: clamp(17px, 2vw, 23px);
+      font-weight: 780;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .metric-value span {
+      color: #718096;
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .metric-foot {
+      margin-top: 5px;
+      color: #8290a3;
+      font-size: 10px;
+    }
+
+    .checks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .check-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid #dcebe1;
+      border-radius: 11px;
+      background: #fbfefc;
+    }
+
+    .check-title {
+      margin-bottom: 2px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .check-detail {
+      color: #68778c;
+      font-size: 10px;
+    }
+
+    .check-pill {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .beam-card {
+      padding: 16px 18px 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 9px;
+    }
+
+    .section-heading p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .small-tag {
+      padding: 4px 8px;
+      border: 1px solid #e0e7f0;
+      border-radius: 999px;
+      color: #68778c;
+      font-size: 10px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .beam-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 132px;
+    }
+
+    .diagram-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .diagram-card {
+      min-width: 0;
+      padding: 14px 13px 10px;
+    }
+
+    .diagram-card h3 {
+      margin: 0 0 1px;
+      font-size: 12px;
+    }
+
+    .diagram-subtitle {
+      margin: 0;
+      color: #77859a;
+      font-size: 10px;
+    }
+
+    .plot {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: 5px;
+    }
+
+    .plot text,
+    .beam-svg text {
+      font-family: inherit;
+    }
+
+    .plot-caption {
+      padding-top: 7px;
+      border-top: 1px solid #edf1f6;
+      color: #77859a;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .secondary-case {
+      padding: 16px 18px;
+      margin: 4px 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+
+    .secondary-case-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .secondary-case h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .secondary-case p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .secondary-results {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .secondary-metric {
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: #f6f8fb;
+    }
+
+    .secondary-metric span {
+      display: block;
+      margin-bottom: 3px;
+      color: #768398;
+      font-size: 9px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .secondary-metric strong {
+      font-size: 12px;
+    }
+
+    .footer-note {
+      margin: 0;
+      color: #8290a3;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 1120px) {
+      .workspace {
+        grid-template-columns: minmax(270px, 320px) minmax(0, 1fr);
+        gap: 15px;
+      }
+
+      .diagram-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .diagram-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(210px, 1.5fr);
+        align-items: center;
+        gap: 0 12px;
+      }
+
+      .diagram-card h3,
+      .diagram-card .diagram-subtitle {
+        grid-column: 1;
+      }
+
+      .diagram-card .plot {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+
+      .diagram-card .plot-caption {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .topbar-inner,
+      main {
+        width: min(100% - 32px, 680px);
+      }
+
+      main {
+        padding-top: 24px;
+      }
+
+      .page-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .diagram-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .diagram-card {
+        display: block;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .secondary-results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar-inner,
+      main {
+        width: calc(100% - 24px);
+      }
+
+      .topbar-note {
+        display: none;
+      }
+
+      .appearance-panel {
+        padding: 22px 18px;
+      }
+
+      .appearance-options {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .appearance-preview {
+        min-height: 72px;
+      }
+
+      .appearance-choice-description {
+        min-height: 0;
+      }
+
+      .results-head {
+        flex-direction: column;
+      }
+
+      .case-select {
+        width: 100%;
+      }
+
+      .case-banner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .metric-grid {
+        gap: 8px;
+      }
+
+      .metric {
+        padding: 11px;
+      }
+
+      .checks-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .beam-card {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-shell" inert aria-hidden="true">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 7h16M6 7v10m12-10v10M3 18h6m6 0h6M4 10h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Beam Designer</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="byu-label" title="Text-only BYU label, not the official logo">BYU</span>
+        <button class="appearance-trigger" id="change-appearance" type="button" aria-haspopup="dialog">Change appearance</button>
+        <span class="topbar-note">Single-beam analysis workspace</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Beam analysis</p>
+        <h1>Beam Designer</h1>
+        <p class="subtitle">Set up a beam, review its response, and check the selected member.</p>
+      </div>
+      <span class="preview-chip"><span class="preview-dot"></span>Stage 2 · Input validation</span>
+    </div>
+
+    <div class="notice" role="note">
+      <span class="notice-icon" aria-hidden="true">i</span>
+      <div>
+        <strong>Stage 2 — inputs and validation are active; beam analysis is not.</strong>
+        Changing inputs updates their beam sketches. Use “Validate inputs” to check the entries; result cards and response diagrams remain static placeholders.
+      </div>
+    </div>
+
+    <div class="workspace">
+      <aside class="panel" aria-labelledby="inputs-title">
+        <div class="panel-head">
+          <h2 id="inputs-title">Beam inputs</h2>
+          <span class="step-tag">02 / INPUTS</span>
+        </div>
+        <div class="input-body">
+          <section class="group" aria-labelledby="beam-group-title">
+            <h3 class="group-title" id="beam-group-title"><span class="group-number">1</span> Beam setup</h3>
+            <div class="field-grid">
+              <div class="field full">
+                <label for="support-type">Support condition</label>
+                <select class="control" id="support-type">
+                  <option value="simply-supported" selected>Simply supported</option>
+                  <option value="cantilever">Cantilever</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="span">Span</label>
+                <div class="input-with-unit">
+                  <input id="span" type="number" value="20" min="0.01" step="any" required>
+                  <span class="unit">ft</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="group" aria-labelledby="member-group-title">
+            <h3 class="group-title" id="member-group-title"><span class="group-number">2</span> Member</h3>
+            <div class="field-grid">
+              <div class="field full">
+                <label for="member-type">Member type</label>
+                <select class="control" id="member-type">
+                  <option value="steel" selected>Steel W-shape</option>
+                  <option value="lumber">Lumber</option>
+                </select>
+              </div>
+              <div class="field full" data-member-kind="steel">
+                <label for="w-shape">W-shape designation</label>
+                <select class="control" id="w-shape">
+                  <option>W10x22</option>
+                  <option selected>W12x26</option>
+                  <option>W14x30</option>
+                  <option>W16x31</option>
+                </select>
+              </div>
+              <div class="field" data-member-kind="lumber" hidden>
+                <label for="wood-size">Lumber size</label>
+                <select class="control" id="wood-size">
+                  <option selected>2x10</option>
+                  <option>2x12</option>
+                  <option>4x8</option>
+                </select>
+              </div>
+              <div class="field" data-member-kind="lumber" hidden>
+                <label for="wood-species">Species</label>
+                <select class="control" id="wood-species">
+                  <option selected>Douglas Fir-Larch</option>
+                  <option>Southern Pine</option>
+                </select>
+              </div>
+              <div class="field full" data-member-kind="lumber" hidden>
+                <label for="wood-grade">Grade</label>
+                <select class="control" id="wood-grade">
+                  <option selected>No. 2</option>
+                  <option>Select Structural</option>
+                </select>
+              </div>
+            </div>
+            <p class="field-help">Select a member type to show its selection fields. Member properties are illustrative in this stage.</p>
+            <div class="member-meta" id="member-meta">
+              <p class="meta-title">Illustrative member properties</p>
+              <div class="property-grid">
+                <span>Elastic modulus <strong>29,000 ksi</strong></span>
+                <span>Moment of inertia <strong>204 in⁴</strong></span>
+                <span>Section modulus <strong>33.4 in³</strong></span>
+                <span>Allowable stress <strong>33 ksi</strong></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="group" aria-labelledby="loads-group-title">
+            <h3 class="group-title" id="loads-group-title"><span class="group-number">3</span> Load cases</h3>
+
+            <div class="load-case" data-case-id="case-1">
+              <div class="load-case-title">
+                <span class="case-label"><span class="case-dot"></span>Case 01 · Uniform load</span>
+                <span class="case-caption">Validation example</span>
+              </div>
+              <figure class="input-beam-figure">
+                <svg class="input-beam-svg" viewBox="0 0 300 86" role="img" aria-label="Input sketch: simply supported 20-foot beam with a one-kip-per-foot downward uniform load across the full span">
+                  <defs>
+                    <marker id="input-udl-arrow" markerWidth="7" markerHeight="7" refX="3.5" refY="5.5" orient="auto">
+                      <path d="M0 0H7L3.5 6Z" fill="#d87942"/>
+                    </marker>
+                  </defs>
+                  <text x="150" y="12" text-anchor="middle" fill="#a65c31" font-size="9" font-weight="700">1.0 kip/ft downward · full 20 ft span</text>
+                  <g stroke="#d87942" stroke-width="1.3" marker-end="url(#input-udl-arrow)">
+                    <line x1="42" y1="18" x2="42" y2="34"/>
+                    <line x1="96" y1="18" x2="96" y2="34"/>
+                    <line x1="150" y1="18" x2="150" y2="34"/>
+                    <line x1="204" y1="18" x2="204" y2="34"/>
+                    <line x1="258" y1="18" x2="258" y2="34"/>
+                  </g>
+                  <rect x="30" y="39" width="240" height="6" rx="2" fill="#64748b"/>
+                  <path d="M30 46L22 58H38Z" fill="#dbe4ef" stroke="#718096"/>
+                  <path d="M270 46L262 58H278Z" fill="#dbe4ef" stroke="#718096"/>
+                  <line x1="30" y1="68" x2="270" y2="68" stroke="#a9b5c6"/>
+                  <line x1="30" y1="65" x2="30" y2="71" stroke="#a9b5c6"/>
+                  <line x1="150" y1="65" x2="150" y2="71" stroke="#a9b5c6"/>
+                  <line x1="270" y1="65" x2="270" y2="71" stroke="#a9b5c6"/>
+                  <text x="30" y="82" text-anchor="middle" fill="#68778c" font-size="8">0 ft</text>
+                  <text x="150" y="82" text-anchor="middle" fill="#68778c" font-size="8">10 ft</text>
+                  <text x="270" y="82" text-anchor="middle" fill="#68778c" font-size="8">20 ft</text>
+                </svg>
+                <figcaption class="input-beam-caption">Input preview · simply supported beam</figcaption>
+              </figure>
+              <div class="load-row" data-load-type="point">
+                <div class="load-row-title"><span>Point load · none (0 kip)</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove point load">Remove</button></div>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="case1-point">Magnitude</label>
+                    <div class="input-with-unit">
+                      <input id="case1-point" data-field="magnitude" type="number" min="0" step="any" value="0">
+                      <span class="unit">kip</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case1-point-location">Position</label>
+                    <div class="input-with-unit">
+                      <input id="case1-point-location" data-field="location" type="number" min="0" step="any" value="10">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <label for="case1-point-direction">Direction</label>
+                    <select class="control" id="case1-point-direction" data-field="direction">
+                      <option value="down" selected>Downward</option>
+                      <option value="up">Upward</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="load-row" data-load-type="uniform">
+                <div class="load-row-title"><span>Uniform load · full span</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove uniform load">Remove</button></div>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="case1-uniform">Intensity</label>
+                    <div class="input-with-unit">
+                      <input id="case1-uniform" data-field="intensity" type="number" min="0" value="1.0" step="any">
+                      <span class="unit">kip/ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case1-start">Start</label>
+                    <div class="input-with-unit">
+                      <input id="case1-start" data-field="start" type="number" min="0" step="any" value="0">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case1-end">End</label>
+                    <div class="input-with-unit">
+                      <input id="case1-end" data-field="end" type="number" min="0" step="any" value="20">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case1-uniform-direction">Direction</label>
+                    <select class="control" id="case1-uniform-direction" data-field="direction">
+                      <option value="down" selected>Downward</option>
+                      <option value="up">Upward</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="load-actions">
+                <div class="load-type-picker">
+                  <label for="load-type-case-1">Load type to add</label>
+                  <select class="control" id="load-type-case-1" data-role="load-type-picker">
+                    <option value="point" selected>Point load</option>
+                    <option value="uniform">Uniformly distributed load (UDL)</option>
+                  </select>
+                </div>
+                <button class="add-button" type="button" data-action="add-selected-load"><span aria-hidden="true">＋</span> Add load</button>
+              </div>
+            </div>
+
+            <div class="load-case" data-case-id="case-2">
+              <div class="load-case-title">
+                <span class="case-label"><span class="case-dot" style="background:#8c63d9"></span>Case 02 · Point load</span>
+                <span class="case-caption">Layout example</span>
+              </div>
+              <figure class="input-beam-figure">
+                <svg class="input-beam-svg" viewBox="0 0 300 86" role="img" aria-label="Input sketch: simply supported 20-foot beam with an eight-kip downward point load at midspan">
+                  <defs>
+                    <marker id="input-point-arrow" markerWidth="7" markerHeight="7" refX="3.5" refY="5.5" orient="auto">
+                      <path d="M0 0H7L3.5 6Z" fill="#8c63d9"/>
+                    </marker>
+                  </defs>
+                  <text x="150" y="12" text-anchor="middle" fill="#7652b8" font-size="9" font-weight="700">8.0 kip downward · at x = 10 ft</text>
+                  <line x1="150" y1="18" x2="150" y2="34" stroke="#8c63d9" stroke-width="1.5" marker-end="url(#input-point-arrow)"/>
+                  <rect x="30" y="39" width="240" height="6" rx="2" fill="#64748b"/>
+                  <path d="M30 46L22 58H38Z" fill="#dbe4ef" stroke="#718096"/>
+                  <path d="M270 46L262 58H278Z" fill="#dbe4ef" stroke="#718096"/>
+                  <line x1="30" y1="68" x2="270" y2="68" stroke="#a9b5c6"/>
+                  <line x1="30" y1="65" x2="30" y2="71" stroke="#a9b5c6"/>
+                  <line x1="150" y1="65" x2="150" y2="71" stroke="#a9b5c6"/>
+                  <line x1="270" y1="65" x2="270" y2="71" stroke="#a9b5c6"/>
+                  <text x="30" y="82" text-anchor="middle" fill="#68778c" font-size="8">0 ft</text>
+                  <text x="150" y="82" text-anchor="middle" fill="#68778c" font-size="8">10 ft</text>
+                  <text x="270" y="82" text-anchor="middle" fill="#68778c" font-size="8">20 ft</text>
+                </svg>
+                <figcaption class="input-beam-caption">Input preview · simply supported beam</figcaption>
+              </figure>
+              <div class="load-row" data-load-type="point">
+                <div class="load-row-title"><span>Point load · midspan</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove point load">Remove</button></div>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="case2-point">Magnitude</label>
+                    <div class="input-with-unit">
+                      <input id="case2-point" data-field="magnitude" type="number" min="0" value="8.0" step="any">
+                      <span class="unit">kip</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case2-point-location">Position</label>
+                    <div class="input-with-unit">
+                      <input id="case2-point-location" data-field="location" type="number" min="0" step="any" value="10">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <label for="case2-point-direction">Direction</label>
+                    <select class="control" id="case2-point-direction" data-field="direction">
+                      <option value="down" selected>Downward</option>
+                      <option value="up">Upward</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="load-row" data-load-type="uniform">
+                <div class="load-row-title"><span>Uniform load · none (0 kip/ft)</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove uniform load">Remove</button></div>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="case2-uniform">Intensity</label>
+                    <div class="input-with-unit">
+                      <input id="case2-uniform" data-field="intensity" type="number" min="0" step="any" value="0">
+                      <span class="unit">kip/ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case2-start">Start</label>
+                    <div class="input-with-unit">
+                      <input id="case2-start" data-field="start" type="number" min="0" step="any" value="0">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case2-end">End</label>
+                    <div class="input-with-unit">
+                      <input id="case2-end" data-field="end" type="number" min="0" step="any" value="20">
+                      <span class="unit">ft</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="case2-uniform-direction">Direction</label>
+                    <select class="control" id="case2-uniform-direction" data-field="direction">
+                      <option value="down" selected>Downward</option>
+                      <option value="up">Upward</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="load-actions">
+                <div class="load-type-picker">
+                  <label for="load-type-case-2">Load type to add</label>
+                  <select class="control" id="load-type-case-2" data-role="load-type-picker">
+                    <option value="point" selected>Point load</option>
+                    <option value="uniform">Uniformly distributed load (UDL)</option>
+                  </select>
+                </div>
+                <button class="add-button" type="button" data-action="add-selected-load"><span aria-hidden="true">＋</span> Add load</button>
+              </div>
+            </div>
+
+            <button class="add-button" id="add-load-case" type="button"><span aria-hidden="true">＋</span> Add load case</button>
+          </section>
+
+          <section class="group" aria-labelledby="limit-group-title">
+            <h3 class="group-title" id="limit-group-title"><span class="group-number">4</span> Deflection limit</h3>
+            <div class="field-grid">
+              <div class="field full">
+                <label for="deflection-ratio">Span-to-deflection ratio (L/n)</label>
+                <div class="input-with-unit">
+                  <input id="deflection-ratio" type="number" value="360" min="1" step="1" required>
+                  <span class="unit">L / n</span>
+                </div>
+              </div>
+            </div>
+            <p class="field-help">Default: L/360. The selected ratio applies to either support condition.</p>
+          </section>
+
+          <button class="primary-button" id="validate-inputs" type="button">Validate inputs <span aria-hidden="true">→</span></button>
+          <p class="button-note">Beam-analysis outputs remain static placeholders in this stage.</p>
+          <p class="validation-summary" id="validation-summary" role="status" aria-live="polite"></p>
+        </div>
+      </aside>
+
+      <section class="results" aria-labelledby="results-title">
+        <div class="card results-head">
+          <div>
+            <h2 id="results-title">Analysis preview</h2>
+            <p>Static sample output for the selected beam and load cases.</p>
+          </div>
+          <span class="small-tag">Static result examples</span>
+        </div>
+
+        <article class="case-banner">
+          <div>
+            <h3>Case 01 · Validation example</h3>
+            <p>Simply supported · 20 ft · W12x26 · 1 kip/ft uniform load</p>
+          </div>
+          <span class="case-status"><span aria-hidden="true">●</span> Preview values</span>
+        </article>
+
+        <div class="metric-grid" aria-label="Case 01 summary values">
+          <div class="metric">
+            <div class="metric-label">Left reaction</div>
+            <div class="metric-value">10.0 <span>kip</span></div>
+            <div class="metric-foot">At x = 0 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Right reaction</div>
+            <div class="metric-value">10.0 <span>kip</span></div>
+            <div class="metric-foot">At x = 20 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum shear</div>
+            <div class="metric-value">10.0 <span>kip</span></div>
+            <div class="metric-foot">Absolute maximum</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum moment</div>
+            <div class="metric-value">50.0 <span>kip-ft</span></div>
+            <div class="metric-foot">At x = 10 ft</div>
+          </div>
+        </div>
+
+        <div class="metric-grid" aria-label="Case 01 member checks">
+          <div class="metric">
+            <div class="metric-label">Maximum bending stress</div>
+            <div class="metric-value">18.0 <span>ksi</span></div>
+            <div class="metric-foot">Allowable: 33.0 ksi</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum deflection</div>
+            <div class="metric-value">0.609 <span>in</span></div>
+            <div class="metric-foot">At x = 10 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Allowable deflection</div>
+            <div class="metric-value">0.667 <span>in</span></div>
+            <div class="metric-foot">L/360 · L = 240 in</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Load case</div>
+            <div class="metric-value">01 <span>of 02</span></div>
+            <div class="metric-foot">Analyzed separately</div>
+          </div>
+        </div>
+
+        <div class="checks-grid" aria-label="Case 01 pass fail checks">
+          <div class="check-card">
+            <div>
+              <div class="check-title">Bending check</div>
+              <div class="check-detail">18.0 ksi &lt; 33.0 ksi allowable</div>
+            </div>
+            <span class="check-pill">PASS</span>
+          </div>
+          <div class="check-card">
+            <div>
+              <div class="check-title">Deflection check</div>
+              <div class="check-detail">0.609 in &lt; 0.667 in allowable</div>
+            </div>
+            <span class="check-pill">PASS</span>
+          </div>
+        </div>
+
+        <section class="card beam-card" aria-labelledby="beam-drawing-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="beam-drawing-title">Beam and applied loads</h2>
+              <p>Case 01 · Downward uniform load over the full span</p>
+            </div>
+            <span class="small-tag">Not to scale</span>
+          </div>
+          <svg class="beam-svg" viewBox="0 0 720 164" role="img" aria-labelledby="beam-title beam-desc">
+            <title id="beam-title">Simply supported beam with a full-span uniform load</title>
+            <desc id="beam-desc">A 20-foot beam with a one-kip-per-foot downward load and ten-kip upward reactions at both supports.</desc>
+            <defs>
+              <marker id="arrow-down" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+                <path d="M0 0L8 0L4 7Z" fill="#d87942"/>
+              </marker>
+              <marker id="arrow-up" markerWidth="8" markerHeight="8" refX="4" refY="2" orient="auto">
+                <path d="M0 7L8 7L4 0Z" fill="#078b84"/>
+              </marker>
+            </defs>
+            <text x="360" y="17" text-anchor="middle" fill="#a65c31" font-size="12" font-weight="700">w = 1.0 kip/ft · downward</text>
+            <g stroke="#d87942" stroke-width="1.5" marker-end="url(#arrow-down)">
+              <line x1="120" y1="27" x2="120" y2="62"/>
+              <line x1="180" y1="27" x2="180" y2="62"/>
+              <line x1="240" y1="27" x2="240" y2="62"/>
+              <line x1="300" y1="27" x2="300" y2="62"/>
+              <line x1="360" y1="27" x2="360" y2="62"/>
+              <line x1="420" y1="27" x2="420" y2="62"/>
+              <line x1="480" y1="27" x2="480" y2="62"/>
+              <line x1="540" y1="27" x2="540" y2="62"/>
+              <line x1="600" y1="27" x2="600" y2="62"/>
+            </g>
+            <rect x="90" y="68" width="540" height="10" rx="3" fill="#64748b"/>
+            <path d="M90 80L74 104H106Z" fill="#dbe4ef" stroke="#718096" stroke-width="1.5"/>
+            <path d="M630 80L614 104H646Z" fill="#dbe4ef" stroke="#718096" stroke-width="1.5"/>
+            <g stroke="#078b84" stroke-width="2" marker-end="url(#arrow-up)">
+              <line x1="90" y1="137" x2="90" y2="109"/>
+              <line x1="630" y1="137" x2="630" y2="109"/>
+            </g>
+            <text x="90" y="153" text-anchor="middle" fill="#08746e" font-size="11" font-weight="700">R₁ = 10.0 kip</text>
+            <text x="630" y="153" text-anchor="middle" fill="#08746e" font-size="11" font-weight="700">R₂ = 10.0 kip</text>
+            <line x1="90" y1="119" x2="630" y2="119" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="90" y1="114" x2="90" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="360" y1="114" x2="360" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="630" y1="114" x2="630" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <text x="90" y="134" text-anchor="middle" fill="#68778c" font-size="10">0 ft</text>
+            <text x="360" y="134" text-anchor="middle" fill="#68778c" font-size="10">10 ft</text>
+            <text x="630" y="134" text-anchor="middle" fill="#68778c" font-size="10">20 ft</text>
+          </svg>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Response diagrams</h2>
+            <p>Case 01 · Positive and negative values shown relative to the zero line</p>
+          </div>
+          <span class="small-tag">Illustrative plots</span>
+        </div>
+
+        <div class="diagram-grid">
+          <figure class="card diagram-card">
+            <div>
+              <h3>Shear diagram</h3>
+              <p class="diagram-subtitle">V (kip)</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder shear diagram, decreasing from positive ten kips to negative ten kips">
+              <line x1="38" y1="18" x2="38" y2="116" stroke="#aeb9c8"/>
+              <line x1="38" y1="68" x2="282" y2="68" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="116" x2="282" y2="116" stroke="#aeb9c8"/>
+              <path d="M38 31L282 105" fill="none" stroke="#315ee8" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="38" cy="31" r="3.5" fill="#315ee8"/>
+              <circle cx="282" cy="105" r="3.5" fill="#315ee8"/>
+              <text x="30" y="35" text-anchor="end" fill="#596980" font-size="9">+10</text>
+              <text x="30" y="72" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="109" text-anchor="end" fill="#596980" font-size="9">−10</text>
+              <text x="38" y="132" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="132" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="132" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+              <text x="286" y="71" fill="#8a97a8" font-size="8">zero</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |V|: 10.0 kip · at beam ends</figcaption>
+          </figure>
+
+          <figure class="card diagram-card">
+            <div>
+              <h3>Moment diagram</h3>
+              <p class="diagram-subtitle">M (kip-ft)</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder moment diagram, a positive parabola with a fifty kip-foot maximum at midspan">
+              <line x1="38" y1="112" x2="282" y2="112" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="18" x2="38" y2="120" stroke="#aeb9c8"/>
+              <line x1="38" y1="120" x2="282" y2="120" stroke="#aeb9c8"/>
+              <path d="M38 112Q160 20 282 112L282 112L38 112Z" fill="#dce8ff" opacity=".8"/>
+              <path d="M38 112Q160 20 282 112" fill="none" stroke="#315ee8" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="160" cy="43" r="3.5" fill="#315ee8"/>
+              <text x="30" y="116" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="48" text-anchor="end" fill="#596980" font-size="9">50</text>
+              <text x="166" y="37" fill="#315ee8" font-size="9" font-weight="700">50.0</text>
+              <text x="38" y="136" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="136" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="136" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |M|: 50.0 kip-ft · at x = 10 ft</figcaption>
+          </figure>
+
+          <figure class="card diagram-card">
+            <div>
+              <h3>Deflection diagram</h3>
+              <p class="diagram-subtitle">δ (in) · downward</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder deflection diagram, downward curve with a maximum magnitude of zero point six zero nine inches at midspan">
+              <line x1="38" y1="28" x2="282" y2="28" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="24" x2="38" y2="119" stroke="#aeb9c8"/>
+              <line x1="38" y1="119" x2="282" y2="119" stroke="#aeb9c8"/>
+              <path d="M38 28Q160 121 282 28" fill="none" stroke="#078b84" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="160" cy="86" r="3.5" fill="#078b84"/>
+              <text x="30" y="32" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="91" text-anchor="end" fill="#596980" font-size="9">−0.609</text>
+              <text x="166" y="83" fill="#078b84" font-size="9" font-weight="700">−0.609</text>
+              <text x="38" y="136" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="136" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="136" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |δ|: 0.609 in · at x = 10 ft</figcaption>
+          </figure>
+        </div>
+
+        <article class="case-banner">
+          <div>
+            <h3>Case 02 · Midspan point load</h3>
+            <p>Simply supported · 20 ft · W12x26 · 8.0 kip downward at x = 10 ft</p>
+          </div>
+          <span class="case-status"><span aria-hidden="true">●</span> Preview values</span>
+        </article>
+
+        <div class="metric-grid" aria-label="Case 02 summary values">
+          <div class="metric">
+            <div class="metric-label">Left reaction</div>
+            <div class="metric-value">4.0 <span>kip</span></div>
+            <div class="metric-foot">At x = 0 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Right reaction</div>
+            <div class="metric-value">4.0 <span>kip</span></div>
+            <div class="metric-foot">At x = 20 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum shear</div>
+            <div class="metric-value">4.0 <span>kip</span></div>
+            <div class="metric-foot">Absolute maximum</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum moment</div>
+            <div class="metric-value">40.0 <span>kip-ft</span></div>
+            <div class="metric-foot">At x = 10 ft</div>
+          </div>
+        </div>
+
+        <div class="metric-grid" aria-label="Case 02 member checks">
+          <div class="metric">
+            <div class="metric-label">Maximum bending stress</div>
+            <div class="metric-value">14.4 <span>ksi</span></div>
+            <div class="metric-foot">Allowable: 33.0 ksi</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Maximum deflection</div>
+            <div class="metric-value">0.389 <span>in</span></div>
+            <div class="metric-foot">At x = 10 ft</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Allowable deflection</div>
+            <div class="metric-value">0.667 <span>in</span></div>
+            <div class="metric-foot">L/360 · L = 240 in</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Load case</div>
+            <div class="metric-value">02 <span>of 02</span></div>
+            <div class="metric-foot">Analyzed separately</div>
+          </div>
+        </div>
+
+        <div class="checks-grid" aria-label="Case 02 pass fail checks">
+          <div class="check-card">
+            <div>
+              <div class="check-title">Bending check</div>
+              <div class="check-detail">14.4 ksi &lt; 33.0 ksi allowable</div>
+            </div>
+            <span class="check-pill">PASS</span>
+          </div>
+          <div class="check-card">
+            <div>
+              <div class="check-title">Deflection check</div>
+              <div class="check-detail">0.389 in &lt; 0.667 in allowable</div>
+            </div>
+            <span class="check-pill">PASS</span>
+          </div>
+        </div>
+
+        <section class="card beam-card" aria-labelledby="beam-two-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="beam-two-title">Beam and applied loads</h2>
+              <p>Case 02 · Single downward point load at midspan</p>
+            </div>
+            <span class="small-tag">Not to scale</span>
+          </div>
+          <svg class="beam-svg" viewBox="0 0 720 164" role="img" aria-labelledby="beam-two-svg-title beam-two-svg-desc">
+            <title id="beam-two-svg-title">Simply supported beam with a centered point load</title>
+            <desc id="beam-two-svg-desc">A 20-foot beam with an eight-kip downward point load at midspan and four-kip upward reactions at both supports.</desc>
+            <defs>
+              <marker id="point-load-down" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+                <path d="M0 0L8 0L4 7Z" fill="#d87942"/>
+              </marker>
+              <marker id="point-reaction-up" markerWidth="8" markerHeight="8" refX="4" refY="2" orient="auto">
+                <path d="M0 7L8 7L4 0Z" fill="#078b84"/>
+              </marker>
+            </defs>
+            <text x="360" y="23" text-anchor="middle" fill="#a65c31" font-size="12" font-weight="700">P = 8.0 kip · downward</text>
+            <line x1="360" y1="31" x2="360" y2="62" stroke="#d87942" stroke-width="2" marker-end="url(#point-load-down)"/>
+            <rect x="90" y="68" width="540" height="10" rx="3" fill="#64748b"/>
+            <path d="M90 80L74 104H106Z" fill="#dbe4ef" stroke="#718096" stroke-width="1.5"/>
+            <path d="M630 80L614 104H646Z" fill="#dbe4ef" stroke="#718096" stroke-width="1.5"/>
+            <g stroke="#078b84" stroke-width="2" marker-end="url(#point-reaction-up)">
+              <line x1="90" y1="137" x2="90" y2="109"/>
+              <line x1="630" y1="137" x2="630" y2="109"/>
+            </g>
+            <text x="90" y="153" text-anchor="middle" fill="#08746e" font-size="11" font-weight="700">R₁ = 4.0 kip</text>
+            <text x="630" y="153" text-anchor="middle" fill="#08746e" font-size="11" font-weight="700">R₂ = 4.0 kip</text>
+            <line x1="90" y1="119" x2="630" y2="119" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="90" y1="114" x2="90" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="360" y1="114" x2="360" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <line x1="630" y1="114" x2="630" y2="124" stroke="#a9b5c6" stroke-width="1"/>
+            <text x="90" y="134" text-anchor="middle" fill="#68778c" font-size="10">0 ft</text>
+            <text x="360" y="134" text-anchor="middle" fill="#68778c" font-size="10">10 ft</text>
+            <text x="630" y="134" text-anchor="middle" fill="#68778c" font-size="10">20 ft</text>
+          </svg>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Response diagrams</h2>
+            <p>Case 02 · Positive and negative values shown relative to the zero line</p>
+          </div>
+          <span class="small-tag">Illustrative plots</span>
+        </div>
+
+        <div class="diagram-grid">
+          <figure class="card diagram-card">
+            <div>
+              <h3>Shear diagram</h3>
+              <p class="diagram-subtitle">V (kip)</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder shear diagram with positive four kips on the left half and negative four kips on the right half">
+              <line x1="38" y1="18" x2="38" y2="116" stroke="#aeb9c8"/>
+              <line x1="38" y1="68" x2="282" y2="68" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="116" x2="282" y2="116" stroke="#aeb9c8"/>
+              <path d="M38 43H160V93H282" fill="none" stroke="#315ee8" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="38" cy="43" r="3.5" fill="#315ee8"/>
+              <circle cx="282" cy="93" r="3.5" fill="#315ee8"/>
+              <text x="30" y="47" text-anchor="end" fill="#596980" font-size="9">+4</text>
+              <text x="30" y="72" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="97" text-anchor="end" fill="#596980" font-size="9">−4</text>
+              <text x="38" y="132" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="132" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="132" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+              <text x="286" y="71" fill="#8a97a8" font-size="8">zero</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |V|: 4.0 kip · on either side of the point load</figcaption>
+          </figure>
+
+          <figure class="card diagram-card">
+            <div>
+              <h3>Moment diagram</h3>
+              <p class="diagram-subtitle">M (kip-ft)</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder moment diagram with a forty kip-foot triangular maximum at midspan">
+              <line x1="38" y1="112" x2="282" y2="112" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="18" x2="38" y2="120" stroke="#aeb9c8"/>
+              <line x1="38" y1="120" x2="282" y2="120" stroke="#aeb9c8"/>
+              <path d="M38 112L160 35L282 112Z" fill="#e7e0fa"/>
+              <path d="M38 112L160 35L282 112" fill="none" stroke="#8c63d9" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="160" cy="35" r="3.5" fill="#8c63d9"/>
+              <text x="30" y="116" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="40" text-anchor="end" fill="#596980" font-size="9">40</text>
+              <text x="166" y="31" fill="#7652b8" font-size="9" font-weight="700">40.0</text>
+              <text x="38" y="136" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="136" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="136" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |M|: 40.0 kip-ft · at x = 10 ft</figcaption>
+          </figure>
+
+          <figure class="card diagram-card">
+            <div>
+              <h3>Deflection diagram</h3>
+              <p class="diagram-subtitle">δ (in) · downward</p>
+            </div>
+            <svg class="plot" viewBox="0 0 300 150" role="img" aria-label="Placeholder deflection diagram with a downward maximum of zero point three eight nine inches at midspan">
+              <line x1="38" y1="28" x2="282" y2="28" stroke="#9eacbd" stroke-dasharray="4 4"/>
+              <line x1="38" y1="24" x2="38" y2="119" stroke="#aeb9c8"/>
+              <line x1="38" y1="119" x2="282" y2="119" stroke="#aeb9c8"/>
+              <path d="M38 28Q160 100 282 28" fill="none" stroke="#078b84" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="160" cy="78" r="3.5" fill="#078b84"/>
+              <text x="30" y="32" text-anchor="end" fill="#596980" font-size="9">0</text>
+              <text x="30" y="83" text-anchor="end" fill="#596980" font-size="9">−0.389</text>
+              <text x="166" y="75" fill="#078b84" font-size="9" font-weight="700">−0.389</text>
+              <text x="38" y="136" text-anchor="middle" fill="#718096" font-size="9">0</text>
+              <text x="160" y="136" text-anchor="middle" fill="#718096" font-size="9">10</text>
+              <text x="282" y="136" text-anchor="middle" fill="#718096" font-size="9">20 ft</text>
+            </svg>
+            <figcaption class="plot-caption">Maximum |δ|: 0.389 in · at x = 10 ft</figcaption>
+          </figure>
+        </div>
+
+        <p class="footer-note">Stage 1 layout only · All diagrams and result values are static mockup content, not live analysis.</p>
+      </section>
+    </div>
+  </main>
+  </div>
+
+  <div class="appearance-gate" id="appearance-gate" role="dialog" aria-modal="true" aria-labelledby="appearance-title" aria-describedby="appearance-description">
+    <div class="appearance-panel">
+      <p class="eyebrow">Welcome to Beam Designer</p>
+      <h2 id="appearance-title">How would you like the site to look?</h2>
+      <p class="appearance-intro" id="appearance-description">Choose a style before opening the beam workspace.</p>
+      <div class="appearance-options">
+        <button class="appearance-choice" type="button" data-theme-choice="professional">
+          <span class="appearance-preview professional">
+            <span class="appearance-sample">Aa</span>
+            <span class="appearance-swatches" aria-hidden="true">
+              <span style="background:#315ee8"></span>
+              <span style="background:#078b84"></span>
+              <span style="background:#f3f6fb"></span>
+            </span>
+          </span>
+          <span class="appearance-choice-title">Professional</span>
+          <span class="appearance-choice-description">Clean colors, clear typography, and a calm engineering workspace.</span>
+          <span class="appearance-action">Use professional style <span aria-hidden="true">→</span></span>
+        </button>
+        <button class="appearance-choice" type="button" data-theme-choice="chaos">
+          <span class="appearance-preview chaos">
+            <span class="appearance-sample">Aa?!</span>
+            <span class="appearance-swatches" aria-hidden="true">
+              <span style="background:#ffe156"></span>
+              <span style="background:#ff3cac"></span>
+              <span style="background:#20e3b2"></span>
+            </span>
+          </span>
+          <span class="appearance-choice-title">Chaos mode</span>
+          <span class="appearance-choice-description">Randomized colors and a randomly selected text font for a playful look.</span>
+          <span class="appearance-action">Enter chaos mode <span aria-hidden="true">→</span></span>
+        </button>
+      </div>
+      <p class="appearance-disclaimer">Your choice applies for this visit. You can reopen this chooser from the page header.</p>
+    </div>
+  </div>
+
+  <script>
+    const appShell = document.getElementById('app-shell');
+    const appearanceGate = document.getElementById('appearance-gate');
+    const appearanceTrigger = document.getElementById('change-appearance');
+    const chaosFonts = [
+      '"Comic Sans MS", cursive',
+      'Impact, sans-serif',
+      '"Courier New", monospace',
+      'Georgia, serif',
+      'Papyrus, fantasy',
+      '"Trebuchet MS", sans-serif'
+    ];
+
+    function chooseAppearance(mode) {
+      if (mode === 'chaos') {
+        const hue = Math.floor(Math.random() * 360);
+        const saturation = 145 + Math.floor(Math.random() * 90);
+        const font = chaosFonts[Math.floor(Math.random() * chaosFonts.length)];
+        appShell.style.filter = `hue-rotate(${hue}deg) saturate(${saturation}%)`;
+        appShell.style.fontFamily = font;
+        document.body.classList.add('chaos-mode');
+      } else {
+        appShell.style.filter = '';
+        appShell.style.fontFamily = '';
+        document.body.classList.remove('chaos-mode');
+      }
+
+      document.body.dataset.appearance = mode;
+      appearanceGate.hidden = true;
+      appShell.inert = false;
+      appShell.removeAttribute('aria-hidden');
+      appearanceTrigger.focus();
+    }
+
+    function openAppearanceChooser() {
+      appearanceGate.hidden = false;
+      appShell.inert = true;
+      appShell.setAttribute('aria-hidden', 'true');
+      appearanceGate.querySelector('[data-theme-choice]').focus();
+    }
+
+    appearanceGate.querySelectorAll('[data-theme-choice]').forEach((button) => {
+      button.addEventListener('click', () => chooseAppearance(button.dataset.themeChoice));
+    });
+    appearanceTrigger.addEventListener('click', openAppearanceChooser);
+
+    const validationState = { requested: false };
+    let nextCaseNumber = document.querySelectorAll('.load-case').length + 1;
+    let nextLoadNumber = 1;
+
+    function readNumericInput(input) {
+      const value = input.value.trim();
+      return value === '' ? NaN : Number(value);
+    }
+
+    function readLoadCase(caseElement) {
+      const loadCase = {
+        element: caseElement,
+        id: caseElement.dataset.caseId,
+        points: [],
+        uniforms: []
+      };
+
+      caseElement.querySelectorAll('.load-row[data-load-type]').forEach((row) => {
+        const type = row.dataset.loadType;
+        const field = (name) => row.querySelector(`[data-field="${name}"]`);
+
+        if (type === 'point') {
+          loadCase.points.push({
+            row,
+            magnitudeInput: field('magnitude'),
+            locationInput: field('location'),
+            directionInput: field('direction'),
+            magnitude: readNumericInput(field('magnitude')),
+            location: readNumericInput(field('location')),
+            direction: field('direction').value
+          });
+        } else if (type === 'uniform') {
+          loadCase.uniforms.push({
+            row,
+            intensityInput: field('intensity'),
+            startInput: field('start'),
+            endInput: field('end'),
+            directionInput: field('direction'),
+            intensity: readNumericInput(field('intensity')),
+            start: readNumericInput(field('start')),
+            end: readNumericInput(field('end')),
+            direction: field('direction').value
+          });
+        }
+      });
+
+      return loadCase;
+    }
+
+    function readBeamInputs() {
+      const spanInput = document.getElementById('span');
+      const ratioInput = document.getElementById('deflection-ratio');
+
+      return {
+        support: document.getElementById('support-type').value,
+        spanInput,
+        span: readNumericInput(spanInput),
+        memberType: document.getElementById('member-type').value,
+        wShapeInput: document.getElementById('w-shape'),
+        woodSizeInput: document.getElementById('wood-size'),
+        woodSpeciesInput: document.getElementById('wood-species'),
+        woodGradeInput: document.getElementById('wood-grade'),
+        ratioInput,
+        deflectionRatio: readNumericInput(ratioInput),
+        loadCases: Array.from(document.querySelectorAll('.load-case'), readLoadCase)
+      };
+    }
+
+    function validateBeamInputs(beam) {
+      const errors = [];
+      const addError = (input, message) => errors.push({ input, message });
+
+      if (!Number.isFinite(beam.span) || beam.span <= 0) {
+        addError(beam.spanInput, 'Enter a span greater than 0 ft.');
+      }
+
+      if (!Number.isFinite(beam.deflectionRatio) || beam.deflectionRatio <= 0) {
+        addError(beam.ratioInput, 'Enter a span-to-deflection ratio greater than 0.');
+      }
+
+      if (beam.memberType === 'steel' && !beam.wShapeInput.value) {
+        addError(beam.wShapeInput, 'Choose a W-shape designation.');
+      }
+
+      if (beam.memberType === 'lumber') {
+        [
+          [beam.woodSizeInput, 'Choose a lumber size.'],
+          [beam.woodSpeciesInput, 'Choose a lumber species.'],
+          [beam.woodGradeInput, 'Choose a lumber grade.']
+        ].forEach(([input, message]) => {
+          if (!input.value) addError(input, message);
+        });
+      }
+
+      beam.loadCases.forEach((loadCase) => {
+        loadCase.points.forEach((load) => {
+          if (!Number.isFinite(load.magnitude) || load.magnitude < 0) {
+            addError(load.magnitudeInput, 'Enter a point-load magnitude of 0 or greater.');
+          } else if (load.magnitude > 0) {
+            if (!Number.isFinite(load.location)) {
+              addError(load.locationInput, 'Enter the point-load location.');
+            } else if (Number.isFinite(beam.span) && beam.span > 0 &&
+                (load.location < 0 || load.location > beam.span)) {
+              addError(load.locationInput, `Point-load location must be within 0 and ${beam.span} ft.`);
+            }
+          }
+        });
+
+        loadCase.uniforms.forEach((load) => {
+          if (!Number.isFinite(load.intensity) || load.intensity < 0) {
+            addError(load.intensityInput, 'Enter a uniform-load intensity of 0 or greater.');
+          } else if (load.intensity > 0) {
+            if (!Number.isFinite(load.start)) {
+              addError(load.startInput, 'Enter the uniform-load start location.');
+            } else if (load.start < 0 ||
+                (Number.isFinite(beam.span) && beam.span > 0 && load.start > beam.span)) {
+              addError(load.startInput, `Start location must be within 0 and ${beam.span} ft.`);
+            }
+
+            if (!Number.isFinite(load.end)) {
+              addError(load.endInput, 'Enter the uniform-load end location.');
+            } else if (load.end < 0 ||
+                (Number.isFinite(beam.span) && beam.span > 0 && load.end > beam.span)) {
+              addError(load.endInput, `End location must be within 0 and ${beam.span} ft.`);
+            }
+
+            if (Number.isFinite(load.start) && Number.isFinite(load.end) &&
+                load.end <= load.start) {
+              addError(load.endInput, 'End location must be after the start location.');
+            }
+          }
+        });
+      });
+
+      return errors;
+    }
+
+    function clearValidationErrors() {
+      document.querySelectorAll('.field.invalid').forEach((field) => {
+        field.classList.remove('invalid');
+      });
+      document.querySelectorAll('.field-error').forEach((message) => message.remove());
+      document.querySelectorAll('[aria-invalid="true"]').forEach((input) => {
+        input.removeAttribute('aria-invalid');
+      });
+    }
+
+    function showValidationResult(errors) {
+      clearValidationErrors();
+      const summary = document.getElementById('validation-summary');
+      summary.className = 'validation-summary';
+
+      errors.forEach(({ input, message }) => {
+        const field = input.closest('.field');
+        if (!field) return;
+
+        field.classList.add('invalid');
+        input.setAttribute('aria-invalid', 'true');
+        const messageElement = document.createElement('p');
+        messageElement.className = 'field-error';
+        messageElement.textContent = message;
+        field.appendChild(messageElement);
+      });
+
+      if (errors.length) {
+        summary.classList.add('error');
+        summary.textContent = `${errors.length} input ${errors.length === 1 ? 'needs' : 'items need'} attention.`;
+      } else {
+        summary.classList.add('success');
+        summary.textContent = 'Inputs look good. Analysis results remain static placeholders in Stage 2.';
+      }
+    }
+
+    function formatSketchNumber(value) {
+      if (!Number.isFinite(value)) return '—';
+      return Number(value).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+    }
+
+    function drawBeamInputSketch(caseElement, beam, loadCase) {
+      const svg = caseElement.querySelector('.input-beam-svg');
+      const caption = caseElement.querySelector('.input-beam-caption');
+      const spanIsValid = Number.isFinite(beam.span) && beam.span > 0;
+      const span = spanIsValid ? beam.span : 20;
+      const startX = beam.support === 'cantilever' ? 45 : 38;
+      const endX = 322;
+      const beamY = 53;
+      const beamWidth = endX - startX;
+      const caseNumber = caseElement.dataset.caseId.replace(/[^0-9]/g, '') || 'x';
+      const markerDown = `load-down-${caseNumber}`;
+      const markerUp = `load-up-${caseNumber}`;
+      const xAt = (location) => startX + Math.max(0, Math.min(span, location)) / span * beamWidth;
+      const drawings = [];
+      const labels = [];
+
+      loadCase.uniforms.forEach((load, index) => {
+        if (!Number.isFinite(load.intensity) || load.intensity <= 0) return;
+
+        const from = Number.isFinite(load.start) ? load.start : 0;
+        const to = Number.isFinite(load.end) ? load.end : span;
+        const x1 = xAt(from);
+        const x2 = xAt(to);
+        const arrowCount = Math.max(2, Math.min(7, Math.round(Math.abs(x2 - x1) / 42) + 1));
+        const arrowStartY = load.direction === 'up' ? 88 : 20;
+        const arrowEndY = load.direction === 'up' ? beamY + 4 : beamY - 4;
+        const arrowLines = [];
+
+        for (let arrow = 0; arrow < arrowCount; arrow += 1) {
+          const ratio = arrowCount === 1 ? 0.5 : arrow / (arrowCount - 1);
+          const x = x1 + (x2 - x1) * ratio;
+          arrowLines.push(`<line x1="${x}" y1="${arrowStartY}" x2="${x}" y2="${arrowEndY}" marker-end="url(#${load.direction === 'up' ? markerUp : markerDown})"/>`);
+        }
+
+        drawings.push(`<g stroke="#d87942" stroke-width="1.25">${arrowLines.join('')}</g>`);
+        labels.push(`<text x="${(x1 + x2) / 2}" y="${13 + index * 10}" text-anchor="middle" fill="#a65c31" font-size="8" font-weight="700">${formatSketchNumber(load.intensity)} kip/ft ${load.direction === 'up' ? 'up' : 'down'}</text>`);
+      });
+
+      loadCase.points.forEach((load, index) => {
+        if (!Number.isFinite(load.magnitude) || load.magnitude <= 0) return;
+
+        const x = xAt(Number.isFinite(load.location) ? load.location : 0);
+        const arrowStartY = load.direction === 'up' ? 88 : 25 + index * 8;
+        const arrowEndY = load.direction === 'up' ? beamY + 4 : beamY - 4;
+        drawings.push(`<line x1="${x}" y1="${arrowStartY}" x2="${x}" y2="${arrowEndY}" stroke="#8c63d9" stroke-width="1.6" marker-end="url(#${load.direction === 'up' ? markerUp : markerDown})"/>`);
+        labels.push(`<text x="${x}" y="${Math.max(13, arrowStartY - 3)}" text-anchor="middle" fill="#7652b8" font-size="8" font-weight="700">${formatSketchNumber(load.magnitude)} kip</text>`);
+      });
+
+      let supports;
+      if (beam.support === 'cantilever') {
+        supports = `<rect x="${startX - 8}" y="${beamY - 11}" width="8" height="28" fill="#dbe4ef" stroke="#718096"/>`;
+        for (let hatch = 0; hatch < 5; hatch += 1) {
+          const y = beamY - 9 + hatch * 6;
+          supports += `<line x1="${startX - 13}" y1="${y + 4}" x2="${startX - 8}" y2="${y}" stroke="#718096"/>`;
+        }
+      } else {
+        supports = `<path d="M${startX} ${beamY + 4}L${startX - 9} ${beamY + 18}H${startX + 9}Z" fill="#dbe4ef" stroke="#718096"/>`;
+        supports += `<path d="M${endX} ${beamY + 4}L${endX - 9} ${beamY + 18}H${endX + 9}Z" fill="#dbe4ef" stroke="#718096"/>`;
+      }
+
+      const middle = (startX + endX) / 2;
+      const tickLabels = [
+        `<text x="${startX}" y="108" text-anchor="middle" fill="#68778c" font-size="8">0 ft</text>`,
+        `<text x="${middle}" y="108" text-anchor="middle" fill="#68778c" font-size="8">${formatSketchNumber(span / 2)} ft</text>`,
+        `<text x="${endX}" y="108" text-anchor="middle" fill="#68778c" font-size="8">${formatSketchNumber(span)} ft</text>`
+      ];
+
+      svg.innerHTML = `
+        <defs>
+          <marker id="${markerDown}" markerWidth="7" markerHeight="7" refX="3.5" refY="5.5" orient="auto">
+            <path d="M0 0H7L3.5 6Z" fill="#d87942"/>
+          </marker>
+          <marker id="${markerUp}" markerWidth="7" markerHeight="7" refX="3.5" refY="1.5" orient="auto">
+            <path d="M0 7H7L3.5 0Z" fill="#078b84"/>
+          </marker>
+        </defs>
+        ${labels.join('')}
+        ${drawings.join('')}
+        <rect x="${startX}" y="${beamY - 3}" width="${beamWidth}" height="6" rx="2" fill="#64748b"/>
+        ${supports}
+        <line x1="${startX}" y1="91" x2="${endX}" y2="91" stroke="#a9b5c6"/>
+        <line x1="${startX}" y1="88" x2="${startX}" y2="94" stroke="#a9b5c6"/>
+        <line x1="${middle}" y1="88" x2="${middle}" y2="94" stroke="#a9b5c6"/>
+        <line x1="${endX}" y1="88" x2="${endX}" y2="94" stroke="#a9b5c6"/>
+        ${tickLabels.join('')}
+        ${spanIsValid ? '' : '<text x="180" y="75" text-anchor="middle" fill="#b42318" font-size="9">Enter a positive span to scale this sketch</text>'}
+        ${drawings.length ? '' : '<text x="180" y="27" text-anchor="middle" fill="#748197" font-size="8">No nonzero loads in this case</text>'}`;
+
+      const supportLabel = beam.support === 'cantilever' ? 'cantilever, fixed at left' : 'simply supported';
+      caption.textContent = `Input preview · ${supportLabel} · ${formatSketchNumber(beam.span)} ft`;
+      svg.setAttribute('aria-label', `Input sketch: ${supportLabel} beam, ${formatSketchNumber(beam.span)} feet, ${loadCase.points.length} point-load entries and ${loadCase.uniforms.length} uniform-load entries.`);
+    }
+
+    function renderInputSketches() {
+      const beam = readBeamInputs();
+      beam.loadCases.forEach((loadCase) => {
+        loadCase.element.querySelectorAll('.load-row[data-load-type]').forEach((row) => {
+          const label = row.querySelector('.load-row-title > span');
+          const type = row.dataset.loadType;
+          if (type === 'point') {
+            const magnitude = readNumericInput(row.querySelector('[data-field="magnitude"]'));
+            const location = readNumericInput(row.querySelector('[data-field="location"]'));
+            const direction = row.querySelector('[data-field="direction"]').value;
+            label.textContent = magnitude > 0
+              ? `Point load · ${formatSketchNumber(magnitude)} kip ${direction} at ${formatSketchNumber(location)} ft`
+              : 'Point load · none (0 kip)';
+          } else {
+            const intensity = readNumericInput(row.querySelector('[data-field="intensity"]'));
+            const start = readNumericInput(row.querySelector('[data-field="start"]'));
+            const end = readNumericInput(row.querySelector('[data-field="end"]'));
+            const direction = row.querySelector('[data-field="direction"]').value;
+            label.textContent = intensity > 0
+              ? `Uniform load · ${formatSketchNumber(intensity)} kip/ft ${direction}, ${formatSketchNumber(start)}–${formatSketchNumber(end)} ft`
+              : 'Uniform load · none (0 kip/ft)';
+          }
+        });
+        drawBeamInputSketch(loadCase.element, beam, loadCase);
+      });
+    }
+
+    function updateMemberFields() {
+      const memberType = document.getElementById('member-type').value;
+      document.querySelectorAll('[data-member-kind]').forEach((field) => {
+        field.hidden = field.dataset.memberKind !== memberType;
+      });
+      document.getElementById('member-meta').hidden = memberType !== 'steel';
+    }
+
+    function addLoadRow(loadCaseElement, type) {
+      const beam = readBeamInputs();
+      const caseNumber = loadCaseElement.dataset.caseId.replace(/[^0-9]/g, '') || 'new';
+      const rowNumber = nextLoadNumber++;
+      const rowId = `case-${caseNumber}-load-${rowNumber}`;
+      const row = document.createElement('div');
+      row.className = 'load-row';
+      row.dataset.loadType = type;
+
+      if (type === 'point') {
+        row.innerHTML = `
+          <div class="load-row-title"><span>Point load</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove point load">Remove</button></div>
+          <div class="field-grid">
+            <div class="field"><label for="${rowId}-magnitude">Magnitude</label><div class="input-with-unit"><input id="${rowId}-magnitude" data-field="magnitude" type="number" min="0" step="any" value="1"><span class="unit">kip</span></div></div>
+            <div class="field"><label for="${rowId}-location">Position</label><div class="input-with-unit"><input id="${rowId}-location" data-field="location" type="number" min="0" step="any" value="${formatSketchNumber(beam.span / 2)}"><span class="unit">ft</span></div></div>
+            <div class="field full"><label for="${rowId}-direction">Direction</label><select class="control" id="${rowId}-direction" data-field="direction"><option value="down" selected>Downward</option><option value="up">Upward</option></select></div>
+          </div>`;
+      } else {
+        row.innerHTML = `
+          <div class="load-row-title"><span>Uniform load</span><button class="load-remove" type="button" data-action="remove-load" aria-label="Remove uniform load">Remove</button></div>
+          <div class="field-grid">
+            <div class="field"><label for="${rowId}-intensity">Intensity</label><div class="input-with-unit"><input id="${rowId}-intensity" data-field="intensity" type="number" min="0" step="any" value="1"><span class="unit">kip/ft</span></div></div>
+            <div class="field"><label for="${rowId}-start">Start</label><div class="input-with-unit"><input id="${rowId}-start" data-field="start" type="number" min="0" step="any" value="0"><span class="unit">ft</span></div></div>
+            <div class="field"><label for="${rowId}-end">End</label><div class="input-with-unit"><input id="${rowId}-end" data-field="end" type="number" min="0" step="any" value="${formatSketchNumber(beam.span)}"><span class="unit">ft</span></div></div>
+            <div class="field"><label for="${rowId}-direction">Direction</label><select class="control" id="${rowId}-direction" data-field="direction"><option value="down" selected>Downward</option><option value="up">Upward</option></select></div>
+          </div>`;
+      }
+
+      loadCaseElement.querySelector('.load-actions').before(row);
+      renderInputSketches();
+      if (validationState.requested) showValidationResult(validateBeamInputs(readBeamInputs()));
+    }
+
+    function addLoadCase() {
+      const base = document.querySelector('.load-case');
+      const clone = base.cloneNode(true);
+      const caseNumber = nextCaseNumber++;
+      const caseId = `case-${caseNumber}`;
+      const span = readNumericInput(document.getElementById('span'));
+      clone.dataset.caseId = caseId;
+      clone.querySelector('.case-label').innerHTML = `<span class="case-dot"></span>Case ${String(caseNumber).padStart(2, '0')} · User-defined`;
+      clone.querySelector('.case-caption').textContent = 'New load case';
+
+      clone.querySelectorAll('[id]').forEach((element, index) => {
+        const oldId = element.id;
+        const newId = `${caseId}-field-${index}`;
+        clone.querySelectorAll(`label[for="${oldId}"]`).forEach((label) => {
+          label.htmlFor = newId;
+        });
+        element.id = newId;
+      });
+      clone.querySelectorAll('.field.invalid').forEach((field) => field.classList.remove('invalid'));
+      clone.querySelectorAll('.field-error').forEach((message) => message.remove());
+      clone.querySelectorAll('[aria-invalid]').forEach((input) => input.removeAttribute('aria-invalid'));
+
+      clone.querySelectorAll('.load-row').forEach((row) => {
+        const setField = (name, value) => {
+          const input = row.querySelector(`[data-field="${name}"]`);
+          if (input) input.value = value;
+        };
+        if (row.dataset.loadType === 'point') {
+          setField('magnitude', 0);
+          setField('location', Number.isFinite(span) && span > 0 ? span / 2 : 0);
+        } else {
+          setField('intensity', 0);
+          setField('start', 0);
+          setField('end', Number.isFinite(span) && span > 0 ? span : 0);
+        }
+        setField('direction', 'down');
+      });
+
+      const removeButton = document.createElement('button');
+      removeButton.className = 'load-case-remove';
+      removeButton.type = 'button';
+      removeButton.dataset.action = 'remove-case';
+      removeButton.textContent = 'Remove case';
+      removeButton.setAttribute('aria-label', `Remove case ${caseNumber}`);
+      clone.querySelector('.load-case-title').appendChild(removeButton);
+      document.getElementById('add-load-case').before(clone);
+      renderInputSketches();
+      if (validationState.requested) showValidationResult(validateBeamInputs(readBeamInputs()));
+    }
+
+    function handleInputChange(event) {
+      if (!(event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement)) return;
+      if (event.target.id === 'member-type') updateMemberFields();
+      renderInputSketches();
+      if (validationState.requested) showValidationResult(validateBeamInputs(readBeamInputs()));
+    }
+
+    function handleLoadAction(event) {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+
+      const loadCase = button.closest('.load-case');
+      if (button.dataset.action === 'add-selected-load') {
+        const type = loadCase.querySelector('[data-role="load-type-picker"]').value;
+        addLoadRow(loadCase, type);
+      } else if (button.dataset.action === 'remove-load') {
+        button.closest('.load-row').remove();
+        renderInputSketches();
+        if (validationState.requested) showValidationResult(validateBeamInputs(readBeamInputs()));
+      } else if (button.dataset.action === 'remove-case') {
+        if (document.querySelectorAll('.load-case').length <= 1) {
+          const summary = document.getElementById('validation-summary');
+          summary.className = 'validation-summary error';
+          summary.textContent = 'At least one load case must remain.';
+          return;
+        }
+        loadCase.remove();
+        renderInputSketches();
+        if (validationState.requested) showValidationResult(validateBeamInputs(readBeamInputs()));
+      }
+    }
+
+    document.addEventListener('input', handleInputChange);
+    document.addEventListener('change', handleInputChange);
+    document.addEventListener('click', handleLoadAction);
+
+    document.getElementById('add-load-case').addEventListener('click', addLoadCase);
+    document.getElementById('validate-inputs').addEventListener('click', () => {
+      validationState.requested = true;
+      showValidationResult(validateBeamInputs(readBeamInputs()));
+    });
+
+    updateMemberFields();
+    renderInputSketches();
+    appearanceGate.querySelector('[data-theme-choice]').focus();
+  </script>
+</body>
+</html>

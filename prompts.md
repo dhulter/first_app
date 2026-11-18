@@ -1,0 +1,62 @@
+# Prompt log
+
+- Asked: Set up the project folders and document the layout for a single-file web app.
+- Changed: Added the four numbered folders with README files, documented the layout in `AGENTS.md`, and created root placeholders for `spec.md` and `index.html`.
+- Worked: Yes; the requested layout and root files are in place.
+- Asked: Read the specification and suggest 4–6 testable development stages, starting with a no-calculation page mockup.
+- Changed: Provided a six-stage build plan; no code was written.
+- Worked: Yes; the plan follows the requested incremental, test-before-continuing approach.
+- Asked: Suggest how to make the specification's purpose section more detailed.
+- Changed: Suggested a purpose-statement draft and refinements; the specification was not edited.
+- Worked: Yes; the suggestions are ready for review.
+- Asked: Update the specification's Purpose section to include expected units and the intended audience, without adding limitations.
+- Changed: Revised the Purpose section with the intended audience, app behavior, and units; left the existing scope section unchanged.
+- Worked: Yes; the requested Purpose details are included.
+- Asked: Suggest ways to make the Inputs section more detailed and stronger.
+- Changed: Suggested a structured input specification with load locations, dimensions, material properties, units, and validation rules; the specification was not edited.
+- Worked: Yes; the recommendations are ready for review.
+- Asked: Apply the proposed Inputs-section changes to the specification.
+- Changed: Expanded Inputs to define beam, member, load, unit, and validation requirements.
+- Worked: Yes; the revised Inputs section is in the specification.
+- Asked: Review the added note about allowing a zero-foot span and say whether it is necessary.
+- Changed: Recommended keeping zero-length spans invalid and distinguishing them from loads placed at the beam endpoint; the specification was not edited.
+- Worked: Yes; the note was reviewed in context.
+- Asked: Remove the note about allowing a zero-foot span.
+- Changed: Removed only that note; the positive-span requirement remains.
+- Worked: Yes; the redundant note is removed.
+- Asked: Suggest a more detailed Calculations section for the beam app specification.
+- Changed: Provided a proposed calculation breakdown and identified required member properties and reporting details; the specification was not edited.
+- Worked: Yes; recommendations are ready for review.
+- Asked: Apply the detailed calculation requirements to the specification.
+- Changed: Specified calculations and reported results per load case, and added user-defined load cases plus a configurable deflection ratio (default L/360) to the related inputs and outputs.
+- Worked: Yes; the specification now reflects the selected options.
+- Asked: Specify a dropdown menu for choosing the W-beam type in Inputs.
+- Changed: Specified a dropdown populated with available W-shape designations.
+- Worked: Yes; the steel member selection is now explicit.
+- Asked: Show the member-selection choices as a table in `spec.md`.
+- Changed: Replaced the member-selection prose with a Markdown table for steel W-shapes and lumber.
+- Worked: Yes; the table is included in the Inputs section.
+- Asked: Suggest more detailed content for Outputs, Look and Feel, Validation, and Out of Scope.
+- Changed: Provided specific, testable recommendations for those four sections; the specification was not edited.
+- Worked: Yes; the suggestions are ready for review.
+- Asked: Apply the suggested details for Outputs, Look and Feel, Validation, and Out of Scope.
+- Changed: Expanded all four sections with per-case reporting, layout and validation expectations, reproducible test criteria, and explicit exclusions.
+- Worked: Yes; the revised sections are in the specification.
+- Asked: Build Stage 1 as a single-file HTML mockup with all inputs, outputs, and plots, without calculations.
+- Changed: Replaced the root `index.html` placeholder with a responsive static mockup containing two filled sample cases, input controls, result summaries, beam sketches, and all three diagram types.
+- Worked: Yes; the page contains static placeholder values and no calculation logic.
+- Asked: Add more beam visuals to show each load case and include a BYU logo at the top.
+- Changed: Added input-side beam/load sketches for both sample cases and a plain-text BYU label at the top as requested.
+- Worked: Yes; the page remains a static mockup and does not reproduce the official BYU logo.
+- Asked: Build Stage 2 only, with calculations separated from drawing code.
+- Changed: Added editable member/support/load-case controls, add/remove load actions, span/load validation, and live input-sketch rendering; kept response results static.
+- Worked: Yes; browser checks covered valid and invalid inputs, dynamic cases/loads, member switching, unchanged placeholder results, and mobile overflow. No structural calculations were added in this input-only stage.
+- Asked: Add a dropdown for selecting the type of load to add to a beam.
+- Changed: Replaced separate add-load buttons with a per-case dropdown for point loads or uniformly distributed loads and an Add load action.
+- Worked: Yes; browser checks confirmed both load types can be added, sketches update, placeholder results remain static, and the mobile layout has no horizontal overflow.
+- Asked: Ensure the load-type dropdown is documented in `spec.md` and present in `index.html`.
+- Changed: Verified the dropdown and matching Inputs requirement are already present in both files.
+- Worked: Yes; the requested changes were already in place.
+- Asked: Add a startup choice between a professional look and a chaos mode with random colors and font.
+- Changed: Added a startup appearance chooser, a header control to reopen it, and documented the visit-scoped behavior in `spec.md`.
+- Worked: Pending browser checks.
