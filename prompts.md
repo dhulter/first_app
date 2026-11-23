@@ -63,3 +63,6 @@
 - Asked: Set the global Git email to `dhulter3@byu.edu` and global name to `David Hulterstrom`.
 - Changed: Updated the global `user.email` and `user.name` Git settings.
 - Worked: Yes; `git config --global --get` confirmed both values.
+- Asked: Run the validation cases in `spec.md` against the app's beam calculations and report expected versus actual values.
+- Changed: Compared the two displayed beam examples with independently computed reference values and reviewed the input-validation branches. No code changes were made.
+- Worked: The displayed examples match expected rounded values, but there is no runtime calculator in the current app to validate.
